@@ -138,3 +138,15 @@ export interface DevOpsCommandResult {
     command: string;
     explanation: string;
 }
+
+export interface Scholarship {
+    name: string;
+    organization: string;
+    description: string;
+    eligibility: string[];
+    link: string;
+}
+
+export interface ScholarshipResult {
+    scholarships: Scholarship[];
+}

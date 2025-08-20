@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult, DevOpsCommandResult, InterviewQuestionResult, InterviewFeedbackResult } from '../types';
+import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult, DevOpsCommandResult, InterviewQuestionResult, InterviewFeedbackResult, ScholarshipResult } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set.");
@@ -945,5 +945,57 @@ export const getInterviewFeedback = async (question: string, answer: string): Pr
         console.error("Error in getInterviewFeedback:", error);
         if (error instanceof SyntaxError) throw error;
         throw new Error("Failed to get valid feedback from the AI. Please try again.");
+    }
+};
+
+export const findScholarships = async (details: { fieldOfStudy: string; levelOfStudy: string; country: string; interests: string }): Promise<ScholarshipResult> => {
+    const jsonSchemaString = `{
+  "scholarships": [{
+    "name": "string, the official name of the scholarship or grant",
+    "organization": "string, the name of the sponsoring organization",
+    "description": "string, a brief summary of the scholarship, including its purpose and award amount if available",
+    "eligibility": ["string, an array of key eligibility criteria (e.g., 'Must be a citizen of an African country', 'For students in STEM fields')"],
+    "link": "string, a direct URL to the scholarship's application or information page"
+  }]
+}`;
+
+    const fullPrompt = `
+        You are an expert scholarship and grant advisor. Your task is to find relevant funding opportunities based on a user's profile. You should prioritize opportunities available to students from the specified country, even if the study destination is international.
+
+        Instructions:
+        1.  Analyze the user's details to find scholarships, grants, and fellowships.
+        2.  You MUST provide a response in a JSON format, enclosed within a single JSON markdown block.
+        3.  The JSON object should match this structure:
+            \`\`\`json
+            ${jsonSchemaString}
+            \`\`\`
+        4.  Find at least 5-7 relevant opportunities.
+        5.  Ensure the 'link' provided is a direct, valid URL.
+        6.  The 'eligibility' array should contain concise, key requirements.
+        7.  If no specific interests are provided, focus on the field of study and country.
+        8.  Do not include any text outside of the JSON markdown block.
+
+        User's Profile:
+        - Field of Study: ${details.fieldOfStudy}
+        - Level of Study: ${details.levelOfStudy}
+        - Country of Residence/Origin: ${details.country}
+        - Specific Interests (Optional): ${details.interests || 'None'}
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
+            config: { temperature: 0.6 },
+        });
+        const parsedResult = parseJsonResponse<ScholarshipResult>(response.text);
+        if (!parsedResult || !Array.isArray(parsedResult.scholarships)) {
+            throw new Error('Invalid response format from AI.');
+        }
+        return parsedResult;
+    } catch (error) {
+        console.error("Error in findScholarships:", error);
+        if (error instanceof SyntaxError) throw error;
+        throw new Error("Failed to get a valid list of scholarships from the AI. Please try again.");
     }
 };

@@ -15,6 +15,7 @@ import { UserFlowIcon } from './components/icons/UserFlowIcon';
 import { JsonIcon } from './components/icons/JsonIcon';
 import { GitCommitIcon } from './components/icons/GitCommitIcon';
 import { DevOpsCommandIcon } from './components/icons/DevOpsCommandIcon';
+import { AcademicCapIcon } from './components/icons/AcademicCapIcon';
 
 // This is a subset for the initial build, focusing on the debugger.
 export const TOOLS: Tool[] = [
@@ -115,6 +116,13 @@ export const TOOLS: Tool[] = [
         description: 'Practice for tech interviews with AI-generated questions and get feedback on your answers.',
         category: ToolCategory.Career,
         icon: InterviewIcon,
+    },
+    {
+        id: 'scholarship-grant-finder',
+        name: 'Scholarship and Grant Finder',
+        description: 'Find scholarships and grants tailored to your field of study and background.',
+        category: ToolCategory.Career,
+        icon: AcademicCapIcon,
     },
      {
         id: 'ai-text-summarizer',
