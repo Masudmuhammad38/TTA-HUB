@@ -13,6 +13,7 @@ import { Tool, ToolCategory } from './types';
 import { TOOLS } from './constants';
 import { ToolCard } from './components/ToolCard';
 import { ResumeCoverLetterGenerator } from './components/ResumeCoverLetterGenerator';
+import { InterviewQuestionSimulator } from './components/InterviewQuestionSimulator';
 import { UXFlowGenerator } from './components/UXFlowGenerator';
 import { JsonFormatterValidator } from './components/JsonFormatterValidator';
 import { GitCommitGenerator } from './components/GitCommitGenerator';
@@ -82,6 +83,8 @@ const App: React.FC = () => {
         return <CareerPathBuilder />;
       case 'resume-cover-letter-generator':
         return <ResumeCoverLetterGenerator />;
+      case 'interview-question-simulator':
+        return <InterviewQuestionSimulator />;
       case 'ai-text-summarizer':
         return <AiTextSummarizer />;
       case 'ai-email-assistant':

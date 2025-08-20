@@ -124,6 +124,16 @@ export interface UXFlowResult {
     flow: UXFlowStep[];
 }
 
+export interface InterviewQuestionResult {
+    question: string;
+}
+
+export interface InterviewFeedbackResult {
+    strengths: string[];
+    areasForImprovement: string[];
+    exampleAnswer: string;
+}
+
 export interface DevOpsCommandResult {
     command: string;
     explanation: string;

@@ -1,5 +1,7 @@
 {
   "name": "TTA AI Hub",
   "description": "A collection of AI-powered tools for developers, startups, and everyday use, built for the Talk Tech Africa community.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

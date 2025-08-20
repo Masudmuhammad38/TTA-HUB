@@ -10,6 +10,7 @@ import { MegaphoneIcon } from './components/icons/MegaphoneIcon';
 import { EnvelopeIcon } from './components/icons/EnvelopeIcon';
 import { WandIcon } from './components/icons/WandIcon';
 import { IdentificationIcon } from './components/icons/IdentificationIcon';
+import { InterviewIcon } from './components/icons/InterviewIcon';
 import { UserFlowIcon } from './components/icons/UserFlowIcon';
 import { JsonIcon } from './components/icons/JsonIcon';
 import { GitCommitIcon } from './components/icons/GitCommitIcon';
@@ -107,6 +108,13 @@ export const TOOLS: Tool[] = [
         description: 'Crafts professional resumes and cover letters tailored to your target job.',
         category: ToolCategory.Career,
         icon: IdentificationIcon,
+    },
+    {
+        id: 'interview-question-simulator',
+        name: 'Interview Question Simulator',
+        description: 'Practice for tech interviews with AI-generated questions and get feedback on your answers.',
+        category: ToolCategory.Career,
+        icon: InterviewIcon,
     },
      {
         id: 'ai-text-summarizer',

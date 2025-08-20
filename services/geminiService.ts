@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult, DevOpsCommandResult } from '../types';
+import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult, DevOpsCommandResult, InterviewQuestionResult, InterviewFeedbackResult } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set.");
@@ -842,5 +842,108 @@ export const generateDevOpsCommand = async (prompt: string, platform: string): P
              throw error;
         }
         throw new Error("Failed to get a valid command from the AI. Please try again.");
+    }
+};
+
+export const generateInterviewQuestion = async (
+    role: string, 
+    type: string, 
+    history: { question: string, answer: string }[] = []
+): Promise<InterviewQuestionResult> => {
+    const jsonSchemaString = `{
+  "question": "string, a relevant interview question based on the role and type."
+}`;
+
+    const historyPrompt = history.length > 0 
+        ? `
+This is the interview history so far:
+${history.map((turn, index) => `
+--- Turn ${index + 1} ---
+Question: ${turn.question}
+Answer: ${turn.answer}
+`).join('\n')}
+
+Based on the candidate's last answer, generate a logical follow-up question. It can be a deeper dive into the same topic or a related concept.
+`
+        : `Generate one ${type} interview question for a candidate applying for the role of a ${role}. The question should be challenging but fair for the specified role.`;
+
+
+    const fullPrompt = `
+        You are an expert technical recruiter and hiring manager conducting an interview. Your task is to generate a single, high-quality interview question.
+
+        Instructions:
+        1.  ${historyPrompt}
+        2.  You MUST provide a response in a JSON format, enclosed within a single JSON markdown block.
+        3.  The JSON object should match this structure:
+            \`\`\`json
+            ${jsonSchemaString}
+            \`\`\`
+        4.  Do not include any preamble or explanation, just the question text itself.
+        5.  Do not include any text outside of the JSON markdown block.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
+            config: { temperature: 0.8 },
+        });
+        const parsedResult = parseJsonResponse<InterviewQuestionResult>(response.text);
+        if (!parsedResult || typeof parsedResult.question !== 'string') {
+            throw new Error('Invalid response format from AI.');
+        }
+        return parsedResult;
+    } catch (error) {
+        console.error("Error in generateInterviewQuestion:", error);
+        if (error instanceof SyntaxError) throw error;
+        throw new Error("Failed to get a valid question from the AI. Please try again.");
+    }
+};
+
+export const getInterviewFeedback = async (question: string, answer: string): Promise<InterviewFeedbackResult> => {
+    const jsonSchemaString = `{
+  "strengths": ["string, a list of what was good about the answer"],
+  "areasForImprovement": ["string, a list of specific things the candidate could improve"],
+  "exampleAnswer": "string, a well-structured example answer to the question"
+}`;
+
+    const fullPrompt = `
+        You are an expert interview coach. Your task is to provide constructive feedback on a candidate's answer to an interview question.
+
+        Instructions:
+        1.  Analyze the candidate's answer in the context of the interview question.
+        2.  You MUST provide a response in a JSON format, enclosed within a single JSON markdown block.
+        3.  The JSON object should match this structure:
+            \`\`\`json
+            ${jsonSchemaString}
+            \`\`\`
+        4.  **Strengths**: Identify 1-3 positive aspects of the answer.
+        5.  **Areas for Improvement**: Provide 1-3 specific, actionable points for improvement.
+        6.  **Example Answer**: Write a concise, ideal answer that demonstrates best practices (e.g., STAR method for behavioral, clear explanation for technical).
+        7.  The feedback should be encouraging and helpful.
+        8.  Do not include any text outside of the JSON markdown block.
+
+        Interview Question:
+        "${question}"
+
+        Candidate's Answer:
+        "${answer}"
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
+            config: { temperature: 0.6 },
+        });
+        const parsedResult = parseJsonResponse<InterviewFeedbackResult>(response.text);
+        if (!parsedResult || !Array.isArray(parsedResult.strengths) || !Array.isArray(parsedResult.areasForImprovement) || typeof parsedResult.exampleAnswer !== 'string') {
+            throw new Error('Invalid response format from AI.');
+        }
+        return parsedResult;
+    } catch (error) {
+        console.error("Error in getInterviewFeedback:", error);
+        if (error instanceof SyntaxError) throw error;
+        throw new Error("Failed to get valid feedback from the AI. Please try again.");
     }
 };
