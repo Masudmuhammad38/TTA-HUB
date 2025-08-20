@@ -1,0 +1,147 @@
+
+import React, { useState, useCallback } from 'react';
+import { improveContent } from '../services/geminiService';
+import type { ContentImproverResult } from '../types';
+import { SparklesIcon } from './icons/SparklesIcon';
+import { ClipboardIcon } from './icons/ClipboardIcon';
+import { CheckIcon } from './icons/CheckIcon';
+
+type ImprovementGoal = 'Improve Writing' | 'Make Professional' | 'Make Casual' | 'Simplify' | 'Expand' | 'Make Concise';
+
+const improvementGoals: { id: ImprovementGoal; label: string }[] = [
+    { id: 'Improve Writing', label: 'Improve Writing' },
+    { id: 'Make Professional', label: 'Make Professional' },
+    { id: 'Make Casual', label: 'Make Casual' },
+    { id: 'Simplify', label: 'Simplify' },
+    { id: 'Expand', label: 'Expand' },
+    { id: 'Make Concise', label: 'Make Concise' },
+];
+
+export const AiContentImprover: React.FC = () => {
+    const [text, setText] = useState<string>('Our new product is really good. It has lots of features that people will like. You should check it out now on our website.');
+    const [goal, setGoal] = useState<ImprovementGoal>('Make Professional');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [result, setResult] = useState<ContentImproverResult | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isCopied, setIsCopied] = useState<boolean>(false);
+
+    const handleGenerate = useCallback(async () => {
+        if (!text.trim()) {
+            setError('Please enter some text to improve.');
+            return;
+        }
+        setIsLoading(true);
+        setResult(null);
+        setError(null);
+        try {
+            const improvedResult = await improveContent(text, goal);
+            setResult(improvedResult);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [text, goal]);
+
+    const handleCopy = useCallback(() => {
+        if (result?.improvedText) {
+            navigator.clipboard.writeText(result.improvedText);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    }, [result]);
+
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Input Panel */}
+                <div>
+                    <div className="space-y-6">
+                        <div>
+                            <label htmlFor="text-input" className="block text-sm font-medium text-slate-300 mb-2">
+                                Your Text
+                            </label>
+                            <textarea
+                                id="text-input"
+                                rows={12}
+                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 text-sm text-slate-200 focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-colors"
+                                placeholder="Paste your content here..."
+                                value={text}
+                                onChange={(e) => setText(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">
+                                Goal
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {improvementGoals.map(g => (
+                                    <button
+                                        key={g.id}
+                                        onClick={() => setGoal(g.id)}
+                                        className={`w-full text-center px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
+                                            goal === g.id ? 'bg-brand-primary text-white' : 'bg-gray-900/50 border border-gray-700 text-slate-300 hover:bg-gray-700'
+                                        }`}
+                                    >
+                                        {g.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isLoading}
+                        className="mt-6 w-full flex items-center justify-center bg-brand-primary hover:bg-indigo-500 text-white font-semibold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Improving...
+                            </>
+                        ) : (
+                             <>
+                                <SparklesIcon className="w-5 h-5 mr-2" />
+                                Improve Content
+                            </>
+                        )}
+                    </button>
+                    {error && <p className="mt-4 text-sm text-red-400 bg-red-900/50 p-3 rounded-md">{error}</p>}
+                </div>
+                
+                {/* Output Panel */}
+                <div className="bg-gray-900/30 rounded-2xl p-4 border border-gray-700/50 h-full min-h-[400px] flex flex-col">
+                    <h3 className="text-lg font-semibold text-white mb-4">Improved Text</h3>
+                    {isLoading && (
+                        <div className="flex-grow flex items-center justify-center">
+                            <div className="text-center">
+                                <SparklesIcon className="w-10 h-10 text-brand-primary animate-pulse mx-auto"/>
+                                <p className="mt-2 text-slate-400">AI is polishing your text...</p>
+                            </div>
+                        </div>
+                    )}
+                    {result && !isLoading && (
+                        <div className="relative flex-grow">
+                            <div className="absolute inset-0 overflow-y-auto pr-2 bg-gray-800/50 p-4 rounded-xl">
+                                <p className="text-slate-200 whitespace-pre-wrap">{result.improvedText}</p>
+                            </div>
+                            <button onClick={handleCopy} className="absolute top-2 right-2 p-1.5 bg-gray-700/80 hover:bg-gray-700 rounded-lg text-slate-300 transition-colors">
+                                {isCopied ? <CheckIcon className="w-4 h-4 text-brand-secondary" /> : <ClipboardIcon className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    )}
+                    {!result && !isLoading && (
+                         <div className="flex-grow flex items-center justify-center">
+                            <div className="text-center text-slate-500">
+                                <p>Your improved content will appear here.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
