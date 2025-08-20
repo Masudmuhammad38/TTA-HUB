@@ -97,7 +97,7 @@ export const TOOLS: Tool[] = [
     },
      {
         id: 'career-path-builder',
-        name: 'Career Path Builder',
+        name: 'Career Path & Skills Roadmap Builder',
         description: 'Suggests career routes & learning resources for your tech journey.',
         category: ToolCategory.Career,
         icon: BriefcaseIcon,
