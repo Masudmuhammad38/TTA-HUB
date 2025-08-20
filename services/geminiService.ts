@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult } from '../types';
+import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult, DevOpsCommandResult } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set.");
@@ -792,5 +792,55 @@ export const generateGitCommit = async (description: string): Promise<GitCommitR
              throw error;
         }
         throw new Error("Failed to get a valid commit message from the AI. Please try again.");
+    }
+};
+
+export const generateDevOpsCommand = async (prompt: string, platform: string): Promise<DevOpsCommandResult> => {
+    const jsonSchemaString = `{
+  "command": "string, the generated command-line instruction.",
+  "explanation": "string, a clear explanation of what the command does and how its flags work."
+}`;
+
+    const fullPrompt = `
+        You are an expert DevOps engineer and CLI tool specialist. Your task is to generate a precise command-line instruction based on a user's description and a specified platform.
+
+        Instructions:
+        1.  Analyze the user's request and the target platform (${platform}).
+        2.  You MUST provide a response in a JSON format, enclosed within a single JSON markdown block.
+        3.  The JSON object should match this structure:
+            \`\`\`json
+            ${jsonSchemaString}
+            \`\`\`
+        4.  The 'command' must be a single, valid, and executable command for the specified platform. Use placeholders like '<your-container-name>' where necessary.
+        5.  The 'explanation' should be clear and concise, breaking down each part of the command and its options.
+        6.  Do not include any text outside of the JSON markdown block.
+
+        User's Request:
+        "${prompt}"
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
+            config: {
+                temperature: 0.2,
+            },
+        });
+
+        const parsedResult = parseJsonResponse<DevOpsCommandResult>(response.text);
+
+        if (!parsedResult || typeof parsedResult.command !== 'string' || typeof parsedResult.explanation !== 'string') {
+             throw new Error('Invalid response format from AI.');
+        }
+
+        return parsedResult;
+
+    } catch (error) {
+        console.error("Error in generateDevOpsCommand:", error);
+         if (error instanceof SyntaxError) {
+             throw error;
+        }
+        throw new Error("Failed to get a valid command from the AI. Please try again.");
     }
 };

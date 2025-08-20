@@ -13,6 +13,7 @@ import { IdentificationIcon } from './components/icons/IdentificationIcon';
 import { UserFlowIcon } from './components/icons/UserFlowIcon';
 import { JsonIcon } from './components/icons/JsonIcon';
 import { GitCommitIcon } from './components/icons/GitCommitIcon';
+import { DevOpsCommandIcon } from './components/icons/DevOpsCommandIcon';
 
 // This is a subset for the initial build, focusing on the debugger.
 export const TOOLS: Tool[] = [
@@ -57,6 +58,13 @@ export const TOOLS: Tool[] = [
         description: 'Create Conventional Commit messages from your change descriptions.',
         category: ToolCategory.Developers,
         icon: GitCommitIcon,
+    },
+    {
+        id: 'devops-command-generator',
+        name: 'DevOps Command Generator',
+        description: 'Generate commands for Docker, Kubernetes, AWS CLI, and more from plain English.',
+        category: ToolCategory.Developers,
+        icon: DevOpsCommandIcon,
     },
      {
         id: 'startup-idea-validator',

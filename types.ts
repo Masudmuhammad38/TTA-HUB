@@ -123,3 +123,8 @@ export interface UXFlowStep {
 export interface UXFlowResult {
     flow: UXFlowStep[];
 }
+
+export interface DevOpsCommandResult {
+    command: string;
+    explanation: string;
+}

@@ -16,6 +16,7 @@ import { ResumeCoverLetterGenerator } from './components/ResumeCoverLetterGenera
 import { UXFlowGenerator } from './components/UXFlowGenerator';
 import { JsonFormatterValidator } from './components/JsonFormatterValidator';
 import { GitCommitGenerator } from './components/GitCommitGenerator';
+import { DevOpsCommandGenerator } from './components/DevOpsCommandGenerator';
 
 import { FilterIcon } from './components/icons/FilterIcon';
 import { CodeIcon } from './components/icons/CodeIcon';
@@ -67,6 +68,8 @@ const App: React.FC = () => {
         return <JsonFormatterValidator />;
       case 'git-commit-generator':
         return <GitCommitGenerator />;
+      case 'devops-command-generator':
+        return <DevOpsCommandGenerator />;
       case 'startup-idea-validator':
         return <StartupIdeaValidator />;
       case 'social-media-post-generator':
