@@ -1,9 +1,5 @@
-
-
-
-
 import { GoogleGenAI } from "@google/genai";
-import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult } from '../types';
+import type { DebugResult, ApiRequestTemplate, RegexResult, SqlQueryResult, StartupValidationResult, CareerPathResult, TextSummaryResult, SocialMediaPostResult, EmailResult, ContentImproverResult, ResumeResult, CoverLetterResult, UXFlowResult, GitCommitResult } from '../types';
 
 if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable not set.");
@@ -742,5 +738,59 @@ export const generateUXFlow = async (prompt: string): Promise<UXFlowResult> => {
              throw error;
         }
         throw new Error("Failed to get a valid UX flow from the AI. Please try again.");
+    }
+};
+
+export const generateGitCommit = async (description: string): Promise<GitCommitResult> => {
+    const jsonSchemaString = `{
+  "type": "string, one of 'feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'chore', 'build', 'ci'",
+  "scope": "string, an optional scope for the change (e.g., 'api', 'ui'). Omit if not applicable.",
+  "subject": "string, a short, imperative summary of the change, starting with a lowercase letter, no period at the end (max 50 chars).",
+  "body": "string, a longer, detailed description of the changes, explaining the 'what' and 'why'. Use newlines for paragraphs."
+}`;
+
+    const fullPrompt = `
+        You are an expert at writing Conventional Commits. Your task is to analyze a developer's description of their code changes and generate a structured commit message.
+
+        Instructions:
+        1.  Analyze the following description of code changes.
+        2.  You MUST provide a response in a JSON format, enclosed within a single JSON markdown block.
+        3.  The JSON object should match this structure:
+            \`\`\`json
+            ${jsonSchemaString}
+            \`\`\`
+        4.  **Type**: Choose the most appropriate type from the allowed list. 'feat' for new features, 'fix' for bug fixes.
+        5.  **Scope**: If the changes affect a specific part of the codebase (e.g., 'auth', 'database'), specify it. Otherwise, omit this field.
+        6.  **Subject**: Write a concise summary in the imperative mood (e.g., 'add login page' not 'added login page'). It must not be capitalized and must not end with a period.
+        7.  **Body**: Provide a more detailed explanation of the changes. Explain the problem and the solution.
+        8.  Do not include any text outside of the JSON markdown block.
+
+        Description of changes:
+        "${description}"
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
+            config: {
+                temperature: 0.3,
+            },
+        });
+        
+        const parsedResult = parseJsonResponse<GitCommitResult>(response.text);
+
+        if (!parsedResult || typeof parsedResult.type !== 'string' || typeof parsedResult.subject !== 'string' || typeof parsedResult.body !== 'string') {
+             throw new Error('Invalid response format from AI.');
+        }
+
+        return parsedResult;
+
+    } catch (error) {
+        console.error("Error in generateGitCommit:", error);
+         if (error instanceof SyntaxError) {
+             throw error;
+        }
+        throw new Error("Failed to get a valid commit message from the AI. Please try again.");
     }
 };

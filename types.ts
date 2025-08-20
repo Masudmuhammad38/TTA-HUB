@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export enum ToolCategory {
@@ -105,6 +104,13 @@ export interface ResumeResult {
 
 export interface CoverLetterResult {
     coverLetterText: string;
+}
+
+export interface GitCommitResult {
+    type: 'feat' | 'fix' | 'docs' | 'style' | 'refactor' | 'perf' | 'test' | 'chore' | 'build' | 'ci';
+    scope?: string;
+    subject: string;
+    body: string;
 }
 
 export interface UXFlowStep {

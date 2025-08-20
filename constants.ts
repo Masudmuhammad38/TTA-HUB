@@ -12,6 +12,7 @@ import { WandIcon } from './components/icons/WandIcon';
 import { IdentificationIcon } from './components/icons/IdentificationIcon';
 import { UserFlowIcon } from './components/icons/UserFlowIcon';
 import { JsonIcon } from './components/icons/JsonIcon';
+import { GitCommitIcon } from './components/icons/GitCommitIcon';
 
 // This is a subset for the initial build, focusing on the debugger.
 export const TOOLS: Tool[] = [
@@ -49,6 +50,13 @@ export const TOOLS: Tool[] = [
         description: 'Format, prettify, and validate your JSON data instantly with helpful error feedback.',
         category: ToolCategory.Developers,
         icon: JsonIcon,
+    },
+    {
+        id: 'git-commit-generator',
+        name: 'Git Commit Generator',
+        description: 'Create Conventional Commit messages from your change descriptions.',
+        category: ToolCategory.Developers,
+        icon: GitCommitIcon,
     },
      {
         id: 'startup-idea-validator',
